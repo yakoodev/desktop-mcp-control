@@ -5,6 +5,7 @@ obj/
 [Dd]ebug/
 [Rr]elease/
 [Pp]ublish/
+dist/
 artifacts/
 TestResults/
 coverage/
@@ -53,3 +54,4 @@ settings.json
 *.temp
 *.dmp
 *.dump
+

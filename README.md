@@ -49,6 +49,10 @@ dotnet run --project DesktopMcp.App
 
 The app starts the MCP runtime automatically and shows the current endpoint in the main window.
 
+## Releases
+
+Every push to `main` builds, tests, publishes, and updates the GitHub Release for the current version from `Directory.Build.props`. The current release tag is `v1.0.0`.
+
 ## MCP connection
 
 Default endpoint:
@@ -120,5 +124,6 @@ Main projects:
 
 ## Repository status
 
-This project is pre-1.0 and currently targets Windows desktop automation first. Public API and UI details may change before a stable release.
+The first public release is `v1.0.0`. The project currently targets Windows desktop automation first, and future releases may expand packaging and client presets.
+
 

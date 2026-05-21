@@ -1,0 +1,105 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Build, package, and release
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Read version
+        id: version
+        shell: pwsh
+        run: |
+          [xml]$props = Get-Content Directory.Build.props
+          $version = $props.Project.PropertyGroup.Version
+          if ([string]::IsNullOrWhiteSpace($version)) {
+            throw "Version is missing in Directory.Build.props"
+          }
+
+          $tag = "v$version"
+          $asset = "desktop-mcp-control-v$version-win-x64.zip"
+          "version=$version" >> $env:GITHUB_OUTPUT
+          "tag=$tag" >> $env:GITHUB_OUTPUT
+          "asset=$asset" >> $env:GITHUB_OUTPUT
+
+      - name: Restore
+        run: dotnet restore DesktopMcp.slnx
+
+      - name: Build
+        run: dotnet build DesktopMcp.slnx --configuration Release --no-restore
+
+      - name: Test
+        run: dotnet test DesktopMcp.slnx --configuration Release --no-build --verbosity normal
+
+      - name: Publish Windows x64
+        shell: pwsh
+        run: |
+          dotnet publish DesktopMcp.App/DesktopMcp.App.csproj `
+            --configuration Release `
+            --runtime win-x64 `
+            --self-contained true `
+            -p:PublishSingleFile=true `
+            -p:IncludeNativeLibrariesForSelfExtract=true `
+            -p:EnableCompressionInSingleFile=true `
+            -p:DebugType=None `
+            -p:DebugSymbols=false `
+            --output publish/desktop-mcp-control
+
+      - name: Package artifact
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path dist | Out-Null
+          Get-ChildItem -Path "publish/desktop-mcp-control" -Recurse -Filter "*.pdb" | Remove-Item -Force
+          $assetPath = Join-Path "dist" "${{ steps.version.outputs.asset }}"
+          Compress-Archive -Path "publish/desktop-mcp-control/*" -DestinationPath $assetPath -Force
+
+          $hash = Get-FileHash $assetPath -Algorithm SHA256
+          "$($hash.Hash)  ${{ steps.version.outputs.asset }}" | Set-Content "$assetPath.sha256"
+
+      - name: Write release notes
+        shell: pwsh
+        run: |
+          @(
+            "# Desktop MCP Control v${{ steps.version.outputs.version }}"
+            ""
+            "Windows x64 build for Desktop MCP Control."
+            ""
+            "Included artifact:"
+            "- ${{ steps.version.outputs.asset }} - self-contained Windows x64 package"
+            "- ${{ steps.version.outputs.asset }}.sha256 - SHA256 checksum"
+            ""
+            "Default MCP endpoint: http://127.0.0.1:45454/mcp"
+          ) | Set-Content RELEASE_NOTES.md
+
+      - name: Create or update GitHub Release
+        uses: ncipollo/release-action@v1
+        with:
+          tag: ${{ steps.version.outputs.tag }}
+          commit: ${{ github.sha }}
+          name: Desktop MCP Control v${{ steps.version.outputs.version }}
+          bodyFile: RELEASE_NOTES.md
+          artifacts: dist/${{ steps.version.outputs.asset }},dist/${{ steps.version.outputs.asset }}.sha256
+          artifactErrorsFailBuild: true
+          allowUpdates: true
+          replacesArtifacts: true
+          removeArtifacts: true
+          makeLatest: true

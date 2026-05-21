@@ -4,7 +4,7 @@ Desktop MCP Control can control the local desktop through MCP tools, so treat en
 
 ## Supported versions
 
-The project is pre-1.0. Security fixes target the latest `main` branch until versioned releases are introduced.
+Security fixes target the latest `main` branch and the newest published release.
 
 ## Reporting a vulnerability
 
