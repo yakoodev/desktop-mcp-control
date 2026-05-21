@@ -1,0 +1,35 @@
+<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="DesktopMcp.App.App"
+             xmlns:local="using:DesktopMcp.App"
+             RequestedThemeVariant="Default">
+             <!-- "Default" ThemeVariant follows system theme variant. "Dark" or "Light" are other available options. -->
+
+    <Application.DataTemplates>
+        <local:ViewLocator/>
+    </Application.DataTemplates>
+  
+    <Application.Styles>
+        <FluentTheme>
+            <FluentTheme.Palettes>
+                <ColorPaletteResources x:Key="Dark"
+                                       Accent="#4A7DFF"
+                                       RegionColor="#111A2E" />
+            </FluentTheme.Palettes>
+        </FluentTheme>
+
+        <Style Selector="Window.GlassWindow">
+            <Setter Property="Background" Value="{x:Null}" />
+            <Setter Property="ExtendClientAreaToDecorationsHint" Value="True" />
+            <Setter Property="TransparencyLevelHint" Value="Transparent" />
+            <Setter Property="Template">
+                <ControlTemplate>
+                    <ContentPresenter Background="{TemplateBinding Background}"
+                                      Content="{TemplateBinding Content}"
+                                      CornerRadius="{TemplateBinding CornerRadius}"
+                                      ClipToBounds="True" />
+                </ControlTemplate>
+            </Setter>
+        </Style>
+    </Application.Styles>
+</Application>

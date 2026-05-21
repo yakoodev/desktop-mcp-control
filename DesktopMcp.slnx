@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="DesktopMcp.App/DesktopMcp.App.csproj" />
+  <Project Path="DesktopMcp.Core/DesktopMcp.Core.csproj" />
+  <Project Path="DesktopMcp.Mcp/DesktopMcp.Mcp.csproj" />
+  <Project Path="DesktopMcp.Tests/DesktopMcp.Tests.csproj" />
+</Solution>

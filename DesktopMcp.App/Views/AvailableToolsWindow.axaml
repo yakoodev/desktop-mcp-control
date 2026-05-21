@@ -1,0 +1,130 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:DesktopMcp.App.ViewModels"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        d:DesignWidth="480"
+        d:DesignHeight="520"
+        x:Class="DesktopMcp.App.Views.AvailableToolsWindow"
+        Classes="GlassWindow"
+        x:DataType="vm:MainWindowViewModel"
+        Width="480"
+        Height="520"
+        Icon="/Assets/icon.png"
+        CanResize="False"
+        ShowInTaskbar="False"
+        WindowDecorations="None"
+        ExtendClientAreaToDecorationsHint="True"
+        CornerRadius="16"
+        TransparencyLevelHint="Transparent"
+        Topmost="False"
+        WindowStartupLocation="Manual"
+        Background="{x:Null}"
+        Title="Available Tools">
+
+    <Window.Styles>
+        <Style Selector="Border.shell">
+            <Setter Property="CornerRadius" Value="16" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="BorderBrush" Value="#667B91AC" />
+        </Style>
+
+        <Style Selector="Border.toolRow">
+            <Setter Property="Height" Value="31" />
+            <Setter Property="CornerRadius" Value="7" />
+            <Setter Property="Background" Value="#5A172439" />
+            <Setter Property="BorderBrush" Value="#405D7692" />
+            <Setter Property="BorderThickness" Value="1" />
+        </Style>
+
+        <Style Selector="TextBlock.icon">
+            <Setter Property="FontFamily" Value="Segoe MDL2 Assets" />
+            <Setter Property="Foreground" Value="#88A6FF" />
+            <Setter Property="FontSize" Value="18" />
+            <Setter Property="HorizontalAlignment" Value="Center" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+        </Style>
+
+        <Style Selector="Border.captionButton">
+            <Setter Property="Width" Value="34" />
+            <Setter Property="Height" Value="30" />
+            <Setter Property="CornerRadius" Value="8" />
+            <Setter Property="Background" Value="Transparent" />
+        </Style>
+
+        <Style Selector="Border.captionButton:pointerover">
+            <Setter Property="Background" Value="#273B5A82" />
+        </Style>
+    </Window.Styles>
+
+    <Grid>
+        <Border Classes="shell" ClipToBounds="True">
+            <Border.Background>
+                <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,100%">
+                    <GradientStop Color="#A9223147" Offset="0" />
+                    <GradientStop Color="#94111B2D" Offset="0.55" />
+                    <GradientStop Color="#A0070C16" Offset="1" />
+                </LinearGradientBrush>
+            </Border.Background>
+
+            <Grid RowDefinitions="44,*">
+                <Border Grid.Row="0"  Margin="20,0" PointerPressed="DragSurface_OnPointerPressed" >
+                    <Border.Background>
+                        <SolidColorBrush Color="Black" Opacity="0"></SolidColorBrush>
+                    </Border.Background>
+                    <Grid ColumnDefinitions="28,*,34">
+                        <TextBlock Classes="icon" Text="&#xE7B8;" />
+                        <TextBlock Grid.Column="1" Text="Available Tools" Foreground="#F3F7FF" FontSize="16" FontWeight="SemiBold" VerticalAlignment="Center" />
+                        <Border Grid.Column="2" Classes="captionButton" PointerPressed="CloseButton_OnPointerPressed">
+                            <TextBlock Text="&#xE8BB;" FontFamily="Segoe MDL2 Assets" Foreground="#93A4C0" FontSize="13" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                    </Grid>
+
+                </Border>
+
+                <Grid Grid.Row="1" RowDefinitions="Auto,*,28" Margin="20,15,20,15">
+
+
+                    <TextBlock Grid.Row="0" Text="{Binding ToolsSummary}" Foreground="#A4B1C8" FontSize="13" Margin="0,0,0,10" />
+
+                    <ItemsControl Grid.Row="1" ItemsSource="{Binding AvailableTools}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <StackPanel Spacing="7" />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="vm:ToolDefinitionViewModel">
+                                <Border Classes="toolRow" Padding="12,0">
+                                    <Grid ColumnDefinitions="178,*,44" ColumnSpacing="10">
+                                        <TextBlock Text="{Binding Name}" Foreground="{Binding AccentBrush}" FontSize="12" FontWeight="SemiBold" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+                                        <TextBlock Grid.Column="1" Text="{Binding Description}" Foreground="#AAB6CA" FontSize="10.5" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+                                        <Border Grid.Column="2" Width="34" Height="20" CornerRadius="6" Background="{Binding BadgeBackground}" HorizontalAlignment="Right" VerticalAlignment="Center">
+                                            <TextBlock Text="{Binding Access}" Foreground="{Binding AccentBrush}" FontSize="11" FontWeight="SemiBold" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                        </Border>
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+
+                    <StackPanel Grid.Row="2" Orientation="Horizontal" Spacing="7" VerticalAlignment="Bottom">
+                        <TextBlock Text="◎" Foreground="#7FA3FF" FontSize="13" VerticalAlignment="Center" />
+                        <TextBlock Text="Tools follow MCP specification" Foreground="#A1ADC3" FontSize="11.5" />
+                    </StackPanel>
+                </Grid>
+            </Grid>
+        </Border>
+    </Grid>
+</Window>
+
+
+
+
+
+
+
+
+
+

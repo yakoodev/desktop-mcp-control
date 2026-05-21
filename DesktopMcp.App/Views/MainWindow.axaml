@@ -1,0 +1,342 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:DesktopMcp.App.ViewModels"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        d:DesignWidth="392"
+        d:DesignHeight="710"
+        x:Class="DesktopMcp.App.Views.MainWindow"
+        Classes="GlassWindow"
+        x:DataType="vm:MainWindowViewModel"
+        Icon="/Assets/icon.png"
+        Width="392"
+        Height="710"
+        MinWidth="392"
+        MinHeight="710"
+        CanResize="False"
+        WindowDecorations="None"
+        ExtendClientAreaToDecorationsHint="True"
+        CornerRadius="18"
+        TransparencyLevelHint="Transparent"
+        FontFamily="Segoe UI"
+        Background="{x:Null}"
+        Title="Desktop MCP Control">
+
+    <Window.Styles>
+        <Style Selector="Border.shell">
+            <Setter Property="CornerRadius" Value="18" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="BorderBrush" Value="#667B91AC" />
+
+        </Style>
+
+        <Style Selector="Border.glassCard">
+            <Setter Property="CornerRadius" Value="14" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="BorderBrush" Value="#52697F9E" />
+            <Setter Property="Background" Value="#68172436" />
+            <Setter Property="BoxShadow" Value="0 14 32 -28 #C600102A" />
+        </Style>
+
+        <Style Selector="Border.rowIcon">
+            <Setter Property="Width" Value="28" />
+            <Setter Property="Height" Value="28" />
+            <Setter Property="CornerRadius" Value="9" />
+            <Setter Property="Background" Value="#3A1D2B47" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="HorizontalAlignment" Value="Center" />
+        </Style>
+
+        <Style Selector="TextBlock.icon">
+            <Setter Property="FontFamily" Value="Segoe MDL2 Assets" />
+            <Setter Property="Foreground" Value="#7EA0FF" />
+            <Setter Property="FontSize" Value="14" />
+            <Setter Property="HorizontalAlignment" Value="Center" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="TextAlignment" Value="Center" />
+        </Style>
+
+        <Style Selector="Image.appIcon">
+            <Setter Property="Width" Value="44" />
+            <Setter Property="Height" Value="44" />
+            <Setter Property="HorizontalAlignment" Value="Center" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="Opacity" Value="0.78"/>
+        </Style>
+
+        <Style Selector="TextBlock.label">
+            <Setter Property="Foreground" Value="#A9B5CB" />
+            <Setter Property="FontSize" Value="13" />
+        </Style>
+
+        <Style Selector="TextBlock.value">
+            <Setter Property="Foreground" Value="#F2F6FF" />
+            <Setter Property="FontSize" Value="13" />
+        </Style>
+
+        <Style Selector="Border.captionButton">
+            <Setter Property="Width" Value="34" />
+            <Setter Property="Height" Value="28" />
+            <Setter Property="CornerRadius" Value="8" />
+            <Setter Property="Background" Value="Transparent" />
+        </Style>
+
+        <Style Selector="Border.captionButton:pointerover">
+            <Setter Property="Background" Value="#273B5A82" />
+        </Style>
+
+        <Style Selector="Button.iconGhost">
+            <Setter Property="Width" Value="36" />
+            <Setter Property="Height" Value="36" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="CornerRadius" Value="9" />
+            <Setter Property="Background" Value="#5C22304A" />
+            <Setter Property="BorderBrush" Value="#4F6B88A0" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Foreground" Value="#DCE8FF" />
+            <Setter Property="FontFamily" Value="Segoe MDL2 Assets" />
+            <Setter Property="FontSize" Value="15" />
+            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+        </Style>
+
+        <Style Selector="Button.iconGhost:pointerover">
+            <Setter Property="Background" Value="#81314D7B" />
+            <Setter Property="BorderBrush" Value="#7892C4FF" />
+        </Style>
+
+        <Style Selector="Button.linkCopy">
+            <Setter Property="MinHeight" Value="24" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="HorizontalAlignment" Value="Stretch" />
+            <Setter Property="HorizontalContentAlignment" Value="Right" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="CornerRadius" Value="7" />
+        </Style>
+
+        <Style Selector="Button.linkCopy:pointerover">
+            <Setter Property="Background" Value="#362B4670" />
+        </Style>
+
+        <Style Selector="Button.tile">
+            <Setter Property="Height" Value="58" />
+            <Setter Property="Padding" Value="12,0" />
+            <Setter Property="HorizontalAlignment" Value="Stretch" />
+            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+            <Setter Property="CornerRadius" Value="12" />
+            <Setter Property="Background" Value="#5A172439" />
+            <Setter Property="BorderBrush" Value="#405D7692" />
+            <Setter Property="BorderThickness" Value="1" />
+        </Style>
+
+        <Style Selector="Button.tile:pointerover">
+            <Setter Property="Background" Value="#74283B5A" />
+            <Setter Property="BorderBrush" Value="#6883AAE0" />
+        </Style>
+
+        <Style Selector="TextBox.token">
+            <Setter Property="Height" Value="36" />
+            <Setter Property="CornerRadius" Value="11" />
+            <Setter Property="Padding" Value="13,0" />
+            <Setter Property="Background" Value="#7A0F182B" />
+            <Setter Property="BorderBrush" Value="#4E647B96" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Foreground" Value="#EEF5FF" />
+            <Setter Property="PasswordChar" Value="●" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+        </Style>
+
+        <Style Selector="ToggleSwitch.compact">
+            <Setter Property="Width" Value="54" />
+            <Setter Property="Height" Value="30" />
+            <Setter Property="OnContent" Value="" />
+            <Setter Property="OffContent" Value="" />
+        </Style>
+
+        <Style Selector="ToggleSwitch.micro">
+            <Setter Property="Width" Value="42" />
+            <Setter Property="Height" Value="30" />
+            <Setter Property="OnContent" Value="" />
+            <Setter Property="OffContent" Value="" />
+        </Style>
+    </Window.Styles>
+
+    <Grid>
+        <Border Classes="shell" ClipToBounds="True">
+            <Border.Background>
+                <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,100%">
+                    <GradientStop Color="#A9223147" Offset="0" />
+                    <GradientStop Color="#8F111B2D" Offset="0.52" />
+                    <GradientStop Color="#A0070C16" Offset="1" />
+                </LinearGradientBrush>
+            </Border.Background>
+
+            <Grid RowDefinitions="62, *">
+                <Grid Grid.Row="0" PointerPressed="DragSurface_OnPointerPressed" ColumnDefinitions="Auto,*,34,34" >
+                    <Grid.Background>
+                        <SolidColorBrush Color="Black" Opacity="0"/>
+                    </Grid.Background>
+                    <Border Width="44" Height="44"  Margin="20,0, 0, 0" VerticalAlignment="Center">
+                        <Image Classes="appIcon" Source="/Assets/icon.png" />
+                    </Border>
+                    <TextBlock Grid.Column="1" Text="MCP Control" Foreground="#C8D2E6" FontSize="15" Margin="10,0,0,0" VerticalAlignment="Center" />
+                    <Border Grid.Column="2" Classes="captionButton" PointerPressed="MinimizeButton_OnPointerPressed">
+                        <TextBlock Text="&#xE921;" FontFamily="Segoe MDL2 Assets" Foreground="#93A4C0" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    </Border>
+                    <Border Margin="0, 0, 20, 0" Grid.Column="3" Classes="captionButton" PointerPressed="CloseButton_OnPointerPressed">
+                        <TextBlock Text="&#xE8BB;" FontFamily="Segoe MDL2 Assets" Foreground="#93A4C0" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    </Border>
+                </Grid>
+                <Grid Grid.Row="1" RowDefinitions="*,30" Margin="20,14">
+
+
+                    <StackPanel Grid.Row="0" Spacing="9">
+                        <Border Classes="glassCard" Padding="17,15">
+                            <StackPanel Spacing="13">
+                                <Grid ColumnDefinitions="*,Auto">
+                                    <StackPanel Orientation="Horizontal" Spacing="9">
+                                        <TextBlock Text="●" Foreground="#66DE8B" FontSize="17" VerticalAlignment="Center" />
+                                        <TextBlock Text="{Binding StatusText}" Foreground="#65DF8A" VerticalAlignment="Center" FontSize="17" FontWeight="SemiBold" />
+                                    </StackPanel>
+                                    <ToggleSwitch Grid.Column="1" Classes="compact" IsChecked="{Binding IsServerRunning, Mode=OneWay}" Command="{Binding ToggleServerCommand}" />
+                                </Grid>
+
+                                <Border Height="1" Background="#42556E88" />
+
+                                <Grid ColumnDefinitions="34,74,*" RowDefinitions="Auto,Auto,Auto,Auto" RowSpacing="13" ColumnSpacing="8">
+                                    <Border Classes="rowIcon"><TextBlock Classes="icon" Text="&#xE71B;" /></Border>
+                                    <TextBlock Grid.Column="1" Classes="label" Text="Host" VerticalAlignment="Center" />
+                                    <Button Grid.Column="2"
+                                            Classes="linkCopy"
+                                            Command="{Binding CopyEndpointCommand}"
+                                            ToolTip.Tip="Click to copy endpoint">
+                                        <TextBlock Classes="value" Text="{Binding Endpoint}" TextAlignment="Right" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+                                    </Button>
+
+                                    <Border Grid.Row="1" Classes="rowIcon"><TextBlock Classes="icon" Text="&#xE121;" /></Border>
+                                    <TextBlock Grid.Row="1" Grid.Column="1" Classes="label" Text="Started At" VerticalAlignment="Center" />
+                                    <TextBlock Grid.Row="1" Grid.Column="2" Classes="value" Text="{Binding StartedAt}" TextAlignment="Right" VerticalAlignment="Center" />
+
+                                    <Border Grid.Row="2" Classes="rowIcon"><TextBlock Classes="icon" Text="&#xE7BA;" /></Border>
+                                    <TextBlock Grid.Row="2" Grid.Column="1" Classes="label" Text="Last Error" VerticalAlignment="Center" />
+                                    <TextBlock Grid.Row="2" Grid.Column="2" Classes="value" Text="{Binding LastError}" TextAlignment="Right" VerticalAlignment="Center" />
+
+                                    <Border Grid.Row="3" Classes="rowIcon"><TextBlock Classes="icon" Text="&#xE765;" /></Border>
+                                    <TextBlock Grid.Row="3" Grid.Column="1" Classes="label" Text="Hotkey" VerticalAlignment="Center" />
+                                    <TextBlock Grid.Row="3" Grid.Column="2" Classes="value" Text="{Binding HotkeyHint}" TextAlignment="Right" VerticalAlignment="Center" />
+                                </Grid>
+                            </StackPanel>
+                        </Border>
+
+                        <Border Classes="glassCard" Padding="17,15">
+                            <StackPanel Spacing="13">
+                                <Grid ColumnDefinitions="34,*,36">
+                                    <Border Classes="rowIcon"><TextBlock Classes="icon" Text="&#xE774;" /></Border>
+                                    <TextBlock Grid.Column="1" Text="Network" Foreground="#F1F6FF" FontSize="15" FontWeight="SemiBold" VerticalAlignment="Center" />
+                                    <Button Grid.Column="2" Classes="iconGhost" Content="&#xE713;" Command="{Binding OpenSettingsCommand}" />
+                                </Grid>
+
+                                <Grid ColumnDefinitions="34,74,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto" RowSpacing="13" ColumnSpacing="8">
+                                    <Border Classes="rowIcon"><TextBlock Classes="icon" Text="&#xE774;" /></Border>
+                                    <TextBlock Grid.Column="1" Classes="label" Text="Host" VerticalAlignment="Center" />
+                                    <TextBlock Grid.Column="2" Classes="value" Text="{Binding NetworkHost}" TextAlignment="Right" VerticalAlignment="Center" />
+
+                                    <Border Grid.Row="1" Classes="rowIcon"><TextBlock Classes="icon" Text="&#xE8CE;" /></Border>
+                                    <TextBlock Grid.Row="1" Grid.Column="1" Classes="label" Text="Port" VerticalAlignment="Center" />
+                                    <TextBlock Grid.Row="1" Grid.Column="2" Classes="value" Text="{Binding NetworkPort}" TextAlignment="Right" VerticalAlignment="Center" />
+
+                                    <Border Grid.Row="2" Classes="rowIcon"><TextBlock Classes="icon" Text="&#xE774;" /></Border>
+                                    <TextBlock Grid.Row="2" Grid.Column="1" Classes="label" Text="Protocol" VerticalAlignment="Center" />
+                                    <TextBlock Grid.Row="2" Grid.Column="2" Classes="value" Text="{Binding NetworkProtocol}" TextAlignment="Right" VerticalAlignment="Center" />
+
+                                    <Border Grid.Row="3" Classes="rowIcon"><TextBlock Classes="icon" Text="&#xE72E;" /></Border>
+                                    <TextBlock Grid.Row="3" Grid.Column="1" Classes="label" Text="Auth" VerticalAlignment="Center" />
+                                    <TextBlock Grid.Row="3" Grid.Column="2" Classes="value" Text="{Binding AuthModeLabel}" TextAlignment="Right" VerticalAlignment="Center" />
+
+                                    <Border Grid.Row="4" Classes="rowIcon"><TextBlock Classes="icon" Text="&#xE8D7;" /></Border>
+                                    <TextBlock Grid.Row="4" Grid.Column="1" Classes="label" Text="Token" VerticalAlignment="Center" />
+                                    <Button Grid.Row="4"
+                                            Grid.Column="2"
+                                            Classes="linkCopy"
+                                            Command="{Binding CopyTokenCommand}"
+                                            IsVisible="{Binding CanCopyToken}"
+                                            ToolTip.Tip="Click to copy token">
+                                        <TextBlock Classes="value" Text="{Binding AuthTokenPreview}" TextAlignment="Right" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+                                    </Button>
+                                    <TextBlock Grid.Row="4"
+                                               Grid.Column="2"
+                                               Classes="value"
+                                               Text="—"
+                                               TextAlignment="Right"
+                                               VerticalAlignment="Center"
+                                               IsVisible="{Binding ShowTokenPlaceholder}" />
+                                </Grid>
+                            </StackPanel>
+                        </Border>
+
+                        <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
+                            <Button Classes="tile" Command="{Binding OpenToolsCommand}">
+                                <Grid ColumnDefinitions="42,*">
+                                    <Border Classes="rowIcon" Width="34" Height="34" CornerRadius="10">
+                                        <TextBlock Text="&#xE7B8;" FontFamily="Segoe MDL2 Assets" Foreground="#75A0FF" FontSize="18" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                    </Border>
+                                    <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
+                                        <TextBlock Text="Tools" Foreground="#F1F6FF" FontSize="14" FontWeight="SemiBold" />
+                                        <TextBlock Text="10 enabled" Foreground="#A5B2CA" FontSize="12" />
+                                    </StackPanel>
+                                </Grid>
+                            </Button>
+
+                            <Button Grid.Column="1" Classes="tile" Command="{Binding OpenSettingsCommand}">
+                                <Grid ColumnDefinitions="42,*">
+                                    <Border Classes="rowIcon" Width="34" Height="34" CornerRadius="10">
+                                        <TextBlock Text="&#xE713;" FontFamily="Segoe MDL2 Assets" Foreground="#B6C4DC" FontSize="18" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                    </Border>
+                                    <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
+                                        <TextBlock Text="Settings" Foreground="#F1F6FF" FontSize="14" FontWeight="SemiBold" />
+                                        <TextBlock Text="Configure" Foreground="#A5B2CA" FontSize="12" />
+                                    </StackPanel>
+                                </Grid>
+                            </Button>
+                        </Grid>
+                    </StackPanel>
+
+                    <Grid Grid.Row="1" ColumnDefinitions="*,Auto" VerticalAlignment="Bottom">
+                        <TextBlock Text="v0.1.0  •  Streamable HTTP" Foreground="#8F9CB6" FontSize="12" />
+                        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8">
+                            <TextBlock Text="&#xE72E;" FontFamily="Segoe MDL2 Assets" Foreground="#48E086" FontSize="15" />
+                            <TextBlock Text="Secure" Foreground="#B8C7DA" FontSize="13" />
+                        </StackPanel>
+                    </Grid>
+                </Grid>
+            </Grid>
+        </Border>
+
+        <Border IsVisible="{Binding IsToastVisible}"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Bottom"
+                Margin="0,0,0,42"
+                Padding="14,8"
+                CornerRadius="18"
+                BorderThickness="1"
+                BorderBrush="#6D82A2C8"
+                Background="#D61B2A40"
+                BoxShadow="0 16 36 -18 #D1000B1F">
+            <StackPanel Orientation="Horizontal" Spacing="8">
+                <TextBlock Text="&#xE73E;" FontFamily="Segoe MDL2 Assets" Foreground="#68E28D" FontSize="13" VerticalAlignment="Center" />
+                <TextBlock Text="{Binding ToastText}" Foreground="#F3F7FF" FontSize="12.5" FontWeight="SemiBold" />
+            </StackPanel>
+        </Border>
+    </Grid>
+</Window>
+
+
+
+
+
+
+
+

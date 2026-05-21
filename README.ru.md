@@ -1,0 +1,124 @@
+[English version](README.md)
+
+# Desktop MCP Control
+
+Windows-first MCP панель управления, которая открывает безопасную локальную автоматизацию рабочего стола через Streamable HTTP. Внутри есть компактный glass UI, трэй-попап, token authorization, скриншоты, управление мышью и клавиатурой, а также emergency stop.
+
+![Desktop MCP Control preview](docs/assets/desktop-mcp-control-preview.png)
+
+## Главное
+
+- Компактная премиальная glass-панель для запуска, остановки и мониторинга MCP сервиса.
+- Streamable HTTP endpoint по умолчанию: `http://127.0.0.1:45454/mcp`.
+- Опциональная защита `Authorization: Bearer <token>` с копированием и регенерацией токена.
+- Динамические настройки host, port и protocol без ручного перезапуска приложения.
+- Кастомный трэй-попап для открытия панели, списка tools, настроек и выхода.
+- Глобальная emergency hotkey: `Ctrl+Alt+Pause`.
+- Windows desktop automation tools для скриншотов, мыши, клавиатуры, drag-and-drop и preview действий.
+
+## Доступные tools
+
+| Tool | Access | Описание |
+| --- | --- | --- |
+| `desktop.mouse_move` | write | Переместить мышь в координаты. |
+| `desktop.mouse_click` | write | Кликнуть кнопкой мыши. |
+| `desktop.mouse_scroll` | write | Выполнить скролл в целевой точке. |
+| `desktop.keyboard_type` | write | Напечатать текст в активном окне. |
+| `desktop.keyboard_hotkey` | write | Нажать сочетание клавиш. |
+| `desktop.drag_drop` | write | Выполнить drag-and-drop между координатами. |
+| `desktop.capture` | read | Сделать скриншот display, window или region. |
+| `desktop.predict_click` | read | Показать preview будущего клика на скриншоте. |
+| `desktop.predict_swipe` | read | Показать preview будущего свайпа на скриншоте. |
+| `desktop.emergency_stop` | write | Остановить текущие и будущие действия до reset. |
+
+## Требования
+
+- Windows 10 или Windows 11.
+- .NET SDK 10.0 или новее для разработки.
+- MCP client с поддержкой Streamable HTTP.
+
+## Быстрый старт
+
+```powershell
+git clone https://github.com/yakoodev/desktop-mcp-control.git
+cd desktop-mcp-control
+dotnet restore DesktopMcp.slnx
+dotnet build DesktopMcp.slnx
+dotnet run --project DesktopMcp.App
+```
+
+Приложение автоматически запускает MCP runtime и показывает текущий endpoint в главном окне.
+
+## Подключение MCP
+
+Endpoint по умолчанию:
+
+```text
+http://127.0.0.1:45454/mcp
+```
+
+Пример общей конфигурации Streamable HTTP клиента:
+
+```json
+{
+  "mcpServers": {
+    "desktop-mcp-control": {
+      "type": "streamable-http",
+      "url": "http://127.0.0.1:45454/mcp"
+    }
+  }
+}
+```
+
+Если включена авторизация токеном, добавь bearer header:
+
+```json
+{
+  "headers": {
+    "Authorization": "Bearer <token>"
+  }
+}
+```
+
+Форматы конфигурации у MCP клиентов могут отличаться, поэтому используй эквивалентные поля Streamable HTTP URL и headers в своем клиенте.
+
+## Настройки
+
+Пользовательские настройки хранятся локально здесь:
+
+```text
+%LocalAppData%\desktop-mcp-control\settings.json
+```
+
+В окне настроек можно менять:
+
+- Host, port и protocol.
+- Режим авторизации: no auth или bearer token.
+- Копирование, показ и регенерацию токена.
+
+Network и authorization настройки применяются к работающему MCP runtime после сохранения.
+
+## Безопасность
+
+Приложение может управлять реальным рабочим столом. Держи endpoint на `127.0.0.1`, если тебе не нужен внешний сетевой доступ. Если биндишься на `0.0.0.0` или внешний интерфейс, включай token authorization и ограничивай доступ на уровне firewall.
+
+Для немедленной остановки используй `Ctrl+Alt+Pause` или tool `desktop.emergency_stop`.
+
+## Разработка
+
+```powershell
+dotnet build DesktopMcp.slnx
+dotnet test DesktopMcp.slnx
+```
+
+Основные проекты:
+
+- `DesktopMcp.App` - Avalonia UI, трэй, настройки и view models.
+- `DesktopMcp.Mcp` - MCP runtime, authorization и tool definitions.
+- `DesktopMcp.Core` - Windows desktop automation services.
+- `DesktopMcp.Tests` - unit tests для runtime, settings и view model поведения.
+
+## Статус репозитория
+
+Проект пока pre-1.0 и в первую очередь нацелен на Windows desktop automation. Public API и детали UI могут измениться до стабильного релиза.
+

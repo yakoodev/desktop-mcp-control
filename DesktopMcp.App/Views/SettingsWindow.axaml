@@ -1,0 +1,285 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:DesktopMcp.App.ViewModels"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        d:DesignWidth="480"
+        d:DesignHeight="510"
+        x:Class="DesktopMcp.App.Views.SettingsWindow"
+        Classes="GlassWindow"
+        x:DataType="vm:MainWindowViewModel"
+        Width="430"
+        Height="460"
+        Icon="/Assets/icon.png"
+        CanResize="False"
+        ShowInTaskbar="False"
+        WindowDecorations="None"
+        ExtendClientAreaToDecorationsHint="True"
+        CornerRadius="16"
+        TransparencyLevelHint="Transparent"
+        Topmost="False"
+        WindowStartupLocation="Manual"
+        Background="{x:Null}"
+        Title="Settings">
+
+    <Window.Styles>
+        <Style Selector="Border.shell">
+            <Setter Property="CornerRadius" Value="16" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="BorderBrush" Value="#667B91AC" />
+        </Style>
+
+        <Style Selector="Border.formCard">
+            <Setter Property="CornerRadius" Value="12" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="BorderBrush" Value="#52697F9E" />
+            <Setter Property="Background" Value="#68172436" />
+        </Style>
+
+        <Style Selector="TextBlock.icon">
+            <Setter Property="FontFamily" Value="Segoe MDL2 Assets" />
+            <Setter Property="Foreground" Value="#88A6FF" />
+            <Setter Property="FontSize" Value="18" />
+            <Setter Property="HorizontalAlignment" Value="Center" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+        </Style>
+
+        <Style Selector="TextBlock.label">
+            <Setter Property="Foreground" Value="#DCE5F6" />
+            <Setter Property="FontSize" Value="12.5" />
+        </Style>
+
+        <Style Selector="TextBlock.hint">
+            <Setter Property="Foreground" Value="#8E9BB4" />
+            <Setter Property="FontSize" Value="10.5" />
+        </Style>
+
+        <Style Selector="TextBox.settingInput">
+            <Setter Property="Height" Value="36" />
+            <Setter Property="CornerRadius" Value="8" />
+            <Setter Property="Padding" Value="12,0" />
+            <Setter Property="Background" Value="#72111A2D" />
+            <Setter Property="BorderBrush" Value="#50687F9C" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Foreground" Value="#F2F6FF" />
+            <Setter Property="FontSize" Value="13" />
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+        </Style>
+
+        <Style Selector="TextBox.tokenInput">
+            <Setter Property="Height" Value="36" />
+            <Setter Property="CornerRadius" Value="8" />
+            <Setter Property="Padding" Value="12,0" />
+            <Setter Property="Background" Value="#72111A2D" />
+            <Setter Property="BorderBrush" Value="#50687F9C" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Foreground" Value="#F2F6FF" />
+            <Setter Property="PasswordChar" Value="●" />
+            <Setter Property="FontSize" Value="13" />
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+        </Style>
+
+        <Style Selector="Button.iconGhost">
+            <Setter Property="Width" Value="36" />
+            <Setter Property="Height" Value="36" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="CornerRadius" Value="8" />
+            <Setter Property="Background" Value="#5C22304A" />
+            <Setter Property="BorderBrush" Value="#4F6B88A0" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Foreground" Value="#DCE8FF" />
+            <Setter Property="FontFamily" Value="Segoe MDL2 Assets" />
+            <Setter Property="FontSize" Value="15" />
+            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+        </Style>
+
+        <Style Selector="Button.iconGhost:pointerover">
+            <Setter Property="Background" Value="#81314D7B" />
+            <Setter Property="BorderBrush" Value="#7892C4FF" />
+        </Style>
+
+        <Style Selector="ComboBox.settingSelect">
+            <Setter Property="Height" Value="36" />
+            <Setter Property="CornerRadius" Value="8" />
+            <Setter Property="Padding" Value="12,0" />
+            <Setter Property="Background" Value="#72111A2D" />
+            <Setter Property="BorderBrush" Value="#50687F9C" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Foreground" Value="#F2F6FF" />
+            <Setter Property="FontSize" Value="13" />
+        </Style>
+
+        <Style Selector="Button.secondary">
+            <Setter Property="Height" Value="36" />
+            <Setter Property="Padding" Value="18,0" />
+            <Setter Property="CornerRadius" Value="8" />
+            <Setter Property="Background" Value="#57172436" />
+            <Setter Property="BorderBrush" Value="#405D7692" />
+
+            <Setter Property="HorizontalAlignment" Value="Stretch"/>
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Foreground" Value="#CBD7EC" />
+            <Setter Property="FontSize" Value="16" />
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+        </Style>
+
+        <Style Selector="Button.primary">
+            <Setter Property="HorizontalAlignment" Value="Stretch"/>
+            <Setter Property="Height" Value="36" />
+            <Setter Property="Padding" Value="24,0" />
+            <Setter Property="CornerRadius" Value="8" />
+            <Setter Property="Background" Value="#A11D4C9C" />
+            <Setter Property="BorderBrush" Value="#5A6FAFFF" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Foreground" Value="#EAF1FF" />
+            <Setter Property="FontSize" Value="16" />
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+        </Style>
+
+        <Style Selector="Border.captionButton">
+            <Setter Property="Width" Value="34" />
+            <Setter Property="Height" Value="30" />
+            <Setter Property="CornerRadius" Value="8" />
+            <Setter Property="Background" Value="Transparent" />
+        </Style>
+
+        <Style Selector="Border.captionButton:pointerover">
+            <Setter Property="Background" Value="#273B5A82" />
+        </Style>
+
+        <Style Selector="ToggleSwitch.micro">
+            <Setter Property="Width" Value="42" />
+            <Setter Property="Height" Value="30" />
+            <Setter Property="OnContent" Value="" />
+            <Setter Property="OffContent" Value="" />
+        </Style>
+    </Window.Styles>
+
+    <Grid>
+        <Border Classes="shell" ClipToBounds="True">
+            <Border.Background>
+                <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,100%">
+                    <GradientStop Color="#A9223147" Offset="0" />
+                    <GradientStop Color="#94111B2D" Offset="0.55" />
+                    <GradientStop Color="#A0070C16" Offset="1" />
+                </LinearGradientBrush>
+            </Border.Background>
+
+            <Grid RowDefinitions="44, *">
+            <Border PointerPressed="DragSurface_OnPointerPressed" Padding="20,0">
+            <Border.Background>
+                        <SolidColorBrush Color="Black" Opacity="0"/>
+                    </Border.Background>
+                 <Grid Grid.Row="0" ColumnDefinitions="28,*,34">
+                    
+                    <TextBlock Classes="icon" Text="&#xE713;" />
+                    <TextBlock Grid.Column="1" Text="Settings" Foreground="#F3F7FF" FontSize="16" FontWeight="SemiBold" VerticalAlignment="Center" />
+                    <Border Grid.Column="2" Classes="captionButton" PointerPressed="CloseButton_OnPointerPressed">
+                        <TextBlock Text="&#xE8BB;" FontFamily="Segoe MDL2 Assets" Foreground="#93A4C0" FontSize="13" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    </Border>
+                </Grid>
+            </Border>
+               
+                <Grid Grid.Row="1" RowDefinitions="*,52" Margin="20,0, 20,15">
+
+                    <StackPanel Grid.Row="0" Spacing="12">
+                        <Border Classes="formCard" Padding="14">
+                            <StackPanel Spacing="12">
+                                <TextBlock Text="Network Settings" Foreground="#F1F6FF" FontSize="14" FontWeight="SemiBold" />
+
+                                <Grid ColumnDefinitions="*,190" RowDefinitions="Auto,Auto,Auto" RowSpacing="10" ColumnSpacing="12">
+                                    <StackPanel Spacing="1">
+                                        <TextBlock Classes="label" Text="Host" />
+                                        <TextBlock Classes="hint" Text="Network interface to bind" />
+                                    </StackPanel>
+                                    <TextBox Grid.Column="1"
+                                             Classes="settingInput"
+                                             Text="{Binding SettingsHost, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+
+                                    <StackPanel Grid.Row="1" Spacing="1">
+                                        <TextBlock Classes="label" Text="Port" />
+                                        <TextBlock Classes="hint" Text="Port to listen on" />
+                                    </StackPanel>
+                                    <TextBox Grid.Row="1"
+                                             Grid.Column="1"
+                                             Classes="settingInput"
+                                             Text="{Binding SettingsPort, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+
+                                    <StackPanel Grid.Row="2" Spacing="1">
+                                        <TextBlock Classes="label" Text="Protocol" />
+                                        <TextBlock Classes="hint" Text="Transmission protocol" />
+                                    </StackPanel>
+                                    <ComboBox Grid.Row="2"
+                                              Grid.Column="1"
+                                              Classes="settingSelect"
+                                              ItemsSource="{Binding ProtocolOptions}"
+                                              SelectedItem="{Binding SettingsProtocol, Mode=TwoWay}" />
+                                </Grid>
+                            </StackPanel>
+                        </Border>
+
+                        <Border Classes="formCard" Padding="14">
+                            <StackPanel Spacing="12">
+                                <Grid ColumnDefinitions="*,Auto">
+                                    <StackPanel Spacing="1">
+                                        <TextBlock Text="Authorization" Foreground="#F1F6FF" FontSize="14" FontWeight="SemiBold" />
+                                        <TextBlock Classes="hint" Text="{Binding SettingsAuthModeLabel}" />
+                                    </StackPanel>
+                                    <ToggleSwitch Grid.Column="1"
+                                                  Classes="micro"
+                                                  IsChecked="{Binding SettingsIsTokenAuthEnabled, Mode=TwoWay}" />
+                                </Grid>
+
+                                <Grid ColumnDefinitions="*,40,40" ColumnSpacing="8">
+                                    <TextBox Classes="tokenInput"
+                                             Text="{Binding SettingsToken, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                             IsEnabled="{Binding SettingsIsTokenAuthEnabled}"
+                                             RevealPassword="{Binding SettingsIsTokenVisible}" />
+                                    <Button Grid.Column="1"
+                                            Classes="iconGhost"
+                                            Content="&#xE8C8;"
+                                            Command="{Binding CopySettingsTokenCommand}"
+                                            IsEnabled="{Binding SettingsIsTokenAuthEnabled}"
+                                            ToolTip.Tip="Copy token" />
+                                    <Button Grid.Column="2"
+                                            Classes="iconGhost"
+                                            Content="&#xE777;"
+                                            Command="{Binding RegenerateTokenCommand}"
+                                            ToolTip.Tip="Regenerate token" />
+                                </Grid>
+
+                                <Button Background="{x:Null}"
+                                        BorderThickness="0"
+                                        Padding="0"
+                                        HorizontalAlignment="Left"
+                                        Command="{Binding ToggleTokenVisibilityCommand}">
+                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                        <TextBlock Text="&#xE890;" FontFamily="Segoe MDL2 Assets" Foreground="#7EA0FF" FontSize="13" VerticalAlignment="Center" />
+                                        <TextBlock Text="Show Token" Foreground="#A9B5CB" FontSize="12.5" VerticalAlignment="Center" />
+                                    </StackPanel>
+                                </Button>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+
+                    <Grid Grid.Row="1" ColumnDefinitions="*,*" VerticalAlignment="Bottom">
+                        <Button Classes="secondary" Content="Reset" Command="{Binding ResetSettingsCommand}" />
+                        <Button Grid.Column="1" Classes="primary" Content="Save" Command="{Binding SaveSettingsCommand}" />
+                    </Grid>
+                </Grid>
+            </Grid>
+        </Border>
+    </Grid>
+</Window>
+
+
+
+
+
+
+
+
+
+

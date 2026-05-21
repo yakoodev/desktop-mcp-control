@@ -1,0 +1,55 @@
+# Build outputs
+bin/
+obj/
+[Bb]uild/
+[Dd]ebug/
+[Rr]elease/
+[Pp]ublish/
+artifacts/
+TestResults/
+coverage/
+coverage.*
+*.coverage
+*.coveragexml
+*.trx
+
+# Visual Studio / Rider / user state
+.vs/
+.idea/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.rsuser
+_ReSharper*/
+*.DotSettings.user
+
+# .NET / NuGet
+.nuget/
+packages/
+project.lock.json
+project.assets.json
+*.nupkg
+*.snupkg
+
+# Avalonia / design-time temp
+*.Designer.cs
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Local runtime settings and secrets
+settings.json
+*.local.json
+*.secret.json
+.env
+.env.*
+
+# Logs and diagnostics
+*.log
+*.tmp
+*.temp
+*.dmp
+*.dump
