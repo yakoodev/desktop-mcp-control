@@ -36,19 +36,27 @@ jobs:
           }
 
           $tag = "v$version"
-          $asset = "desktop-mcp-control-v$version-win-x64.zip"
+          $portable = "desktop-mcp-control-v$version-win-x64-portable.exe"
+          $setup = "desktop-mcp-control-v$version-win-x64-setup.exe"
           "version=$version" >> $env:GITHUB_OUTPUT
           "tag=$tag" >> $env:GITHUB_OUTPUT
-          "asset=$asset" >> $env:GITHUB_OUTPUT
+          "portable=$portable" >> $env:GITHUB_OUTPUT
+          "setup=$setup" >> $env:GITHUB_OUTPUT
 
       - name: Restore
         run: dotnet restore DesktopMcp.slnx
+
+      - name: Restore local tools
+        run: dotnet tool restore
 
       - name: Build
         run: dotnet build DesktopMcp.slnx --configuration Release --no-restore
 
       - name: Test
         run: dotnet test DesktopMcp.slnx --configuration Release --no-build --verbosity normal
+
+      - name: Restore WiX extensions
+        run: dotnet wix extension add WixToolset.Bal.wixext/6.0.2
 
       - name: Publish Windows x64
         shell: pwsh
@@ -62,18 +70,46 @@ jobs:
             -p:EnableCompressionInSingleFile=true `
             -p:DebugType=None `
             -p:DebugSymbols=false `
+            -p:CopyDebugSymbolFilesFromPackages=false `
             --output publish/desktop-mcp-control
 
-      - name: Package artifact
+      - name: Build release assets
         shell: pwsh
         run: |
           New-Item -ItemType Directory -Force -Path dist | Out-Null
           Get-ChildItem -Path "publish/desktop-mcp-control" -Recurse -Filter "*.pdb" | Remove-Item -Force
-          $assetPath = Join-Path "dist" "${{ steps.version.outputs.asset }}"
-          Compress-Archive -Path "publish/desktop-mcp-control/*" -DestinationPath $assetPath -Force
 
-          $hash = Get-FileHash $assetPath -Algorithm SHA256
-          "$($hash.Hash)  ${{ steps.version.outputs.asset }}" | Set-Content "$assetPath.sha256"
+          $portablePath = Join-Path "dist" "${{ steps.version.outputs.portable }}"
+          Copy-Item "publish/desktop-mcp-control/DesktopMcp.App.exe" $portablePath -Force
+
+          $msiPath = Join-Path "dist" "desktop-mcp-control-v${{ steps.version.outputs.version }}-win-x64.msi"
+          dotnet wix build installer/Product.wxs `
+            -d Version=${{ steps.version.outputs.version }} `
+            -d PublishDir=publish/desktop-mcp-control `
+            -d IconPath=DesktopMcp.App/Assets/icon.ico `
+            -arch x64 `
+            -o $msiPath `
+            -pdbtype none
+
+          $balExtension = Resolve-Path ".wix/extensions/WixToolset.Bal.wixext/6.0.2/wixext6/WixToolset.BootstrapperApplications.wixext.dll"
+          $setupPath = Join-Path "dist" "${{ steps.version.outputs.setup }}"
+          dotnet wix build installer/Bundle.wxs `
+            -d Version=${{ steps.version.outputs.version }} `
+            -d MsiPath=$msiPath `
+            -ext $balExtension `
+            -arch x64 `
+            -o $setupPath `
+            -pdbtype none
+
+          Remove-Item $msiPath -Force
+
+          $hashes = @(
+            Get-FileHash $portablePath -Algorithm SHA256
+            Get-FileHash $setupPath -Algorithm SHA256
+          )
+          $hashes | ForEach-Object {
+            "$($_.Hash)  $(Split-Path $_.Path -Leaf)"
+          } | Set-Content "dist/SHA256SUMS.txt"
 
       - name: Write release notes
         shell: pwsh
@@ -84,11 +120,20 @@ jobs:
             "Windows x64 build for Desktop MCP Control."
             ""
             "Included artifact:"
-            "- ${{ steps.version.outputs.asset }} - self-contained Windows x64 package"
-            "- ${{ steps.version.outputs.asset }}.sha256 - SHA256 checksum"
+            "- ${{ steps.version.outputs.portable }} - portable self-contained executable"
+            "- ${{ steps.version.outputs.setup }} - WiX setup executable"
+            "- SHA256SUMS.txt - SHA256 checksums"
             ""
             "Default MCP endpoint: http://127.0.0.1:45454/mcp"
           ) | Set-Content RELEASE_NOTES.md
+
+      - name: Move release tag
+        shell: pwsh
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git tag --force "${{ steps.version.outputs.tag }}" "${{ github.sha }}"
+          git push --force origin "refs/tags/${{ steps.version.outputs.tag }}"
 
       - name: Create or update GitHub Release
         uses: ncipollo/release-action@v1
@@ -97,7 +142,7 @@ jobs:
           commit: ${{ github.sha }}
           name: Desktop MCP Control v${{ steps.version.outputs.version }}
           bodyFile: RELEASE_NOTES.md
-          artifacts: dist/${{ steps.version.outputs.asset }},dist/${{ steps.version.outputs.asset }}.sha256
+          artifacts: dist/${{ steps.version.outputs.portable }},dist/${{ steps.version.outputs.setup }},dist/SHA256SUMS.txt
           artifactErrorsFailBuild: true
           allowUpdates: true
           replacesArtifacts: true

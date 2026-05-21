@@ -6,6 +6,7 @@ obj/
 [Rr]elease/
 [Pp]ublish/
 dist/
+.wix/
 artifacts/
 TestResults/
 coverage/

@@ -53,6 +53,12 @@ The app starts the MCP runtime automatically and shows the current endpoint in t
 
 Every push to `main` builds, tests, publishes, and updates the GitHub Release for the current version from `Directory.Build.props`. The current release tag is `v1.0.0`.
 
+Release assets:
+
+- `desktop-mcp-control-v1.0.0-win-x64-portable.exe` - portable self-contained executable.
+- `desktop-mcp-control-v1.0.0-win-x64-setup.exe` - WiX setup executable with Start Menu shortcut.
+- `SHA256SUMS.txt` - checksums for both executables.
+
 ## MCP connection
 
 Default endpoint:

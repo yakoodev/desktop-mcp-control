@@ -53,6 +53,12 @@ dotnet run --project DesktopMcp.App
 
 Каждый push в `main` собирает, тестирует, публикует приложение и обновляет GitHub Release для текущей версии из `Directory.Build.props`. Текущий release tag: `v1.0.0`.
 
+Release assets:
+
+- `desktop-mcp-control-v1.0.0-win-x64-portable.exe` - portable self-contained executable.
+- `desktop-mcp-control-v1.0.0-win-x64-setup.exe` - WiX setup executable со Start Menu shortcut.
+- `SHA256SUMS.txt` - checksums для обоих exe.
+
 ## Подключение MCP
 
 Endpoint по умолчанию:

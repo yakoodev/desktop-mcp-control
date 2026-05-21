@@ -1,0 +1,14 @@
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs"
+     xmlns:bal="http://wixtoolset.org/schemas/v4/wxs/bal">
+  <Bundle Name="Desktop MCP Control"
+          Manufacturer="Yakoo"
+          Version="$(var.Version)"
+          UpgradeCode="74ab6bb1-3311-4732-967f-32fca0a6c6df">
+    <BootstrapperApplication>
+      <bal:WixStandardBootstrapperApplication LicenseUrl="https://github.com/yakoodev/desktop-mcp-control/blob/main/LICENSE" Theme="hyperlinkLicense" />
+    </BootstrapperApplication>
+    <Chain>
+      <MsiPackage SourceFile="$(var.MsiPath)" />
+    </Chain>
+  </Bundle>
+</Wix>
