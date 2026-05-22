@@ -2,7 +2,7 @@ using System.Runtime.InteropServices;
 
 namespace DesktopMcp.App.Services;
 
-public sealed class GlobalEmergencyHotkeyListener : IDisposable
+public sealed class GlobalEmergencyHotkeyListener : IGlobalEmergencyHotkey
 {
     private const int WhKeyboardLl = 13;
     private const int WmKeyDown = 0x0100;
@@ -17,6 +17,10 @@ public sealed class GlobalEmergencyHotkeyListener : IDisposable
 
     public event EventHandler? Triggered;
 
+    public bool IsSupported => RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
+
+    public string ShortcutDisplayName => "Ctrl+Alt+Pause";
+
     public GlobalEmergencyHotkeyListener()
     {
         _proc = HookCallback;
@@ -24,6 +28,11 @@ public sealed class GlobalEmergencyHotkeyListener : IDisposable
 
     public void Start()
     {
+        if (!IsSupported)
+        {
+            return;
+        }
+
         if (_hook != nint.Zero)
         {
             return;

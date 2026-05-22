@@ -10,9 +10,75 @@ permissions:
   contents: write
 
 jobs:
+  linux-artifact:
+    name: Build Linux artifact
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Read version
+        id: version
+        shell: bash
+        run: |
+          version=$(sed -n 's:.*<Version>\(.*\)</Version>.*:\1:p' Directory.Build.props | head -n1)
+          if [ -z "$version" ]; then
+            echo "Version is missing in Directory.Build.props" >&2
+            exit 1
+          fi
+
+          linux_portable="desktop-mcp-control-v${version}-linux-x64-portable.tar.gz"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "linuxPortable=$linux_portable" >> "$GITHUB_OUTPUT"
+
+      - name: Restore
+        run: dotnet restore DesktopMcp.slnx
+
+      - name: Build
+        run: dotnet build DesktopMcp.slnx --configuration Release --no-restore
+
+      - name: Test
+        run: dotnet test DesktopMcp.slnx --configuration Release --no-build --verbosity normal
+
+      - name: Publish Linux x64
+        run: |
+          dotnet publish DesktopMcp.App/DesktopMcp.App.csproj \
+            --configuration Release \
+            --runtime linux-x64 \
+            --self-contained true \
+            -p:PublishSingleFile=true \
+            -p:IncludeNativeLibrariesForSelfExtract=true \
+            -p:EnableCompressionInSingleFile=true \
+            -p:DebugType=None \
+            -p:DebugSymbols=false \
+            -p:CopyDebugSymbolFilesFromPackages=false \
+            --output publish/desktop-mcp-control-linux
+
+      - name: Pack Linux artifact
+        run: |
+          mkdir -p dist
+          tar -C publish/desktop-mcp-control-linux -czf "dist/${{ steps.version.outputs.linuxPortable }}" .
+          sha256sum "dist/${{ steps.version.outputs.linuxPortable }}" > dist/SHA256SUMS-linux.txt
+
+      - name: Upload Linux artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-release-assets
+          path: |
+            dist/${{ steps.version.outputs.linuxPortable }}
+            dist/SHA256SUMS-linux.txt
+
   release:
     name: Build, package, and release
     runs-on: windows-latest
+    needs:
+      - linux-artifact
 
     steps:
       - name: Checkout
@@ -38,10 +104,12 @@ jobs:
           $tag = "v$version"
           $portable = "desktop-mcp-control-v$version-win-x64-portable.exe"
           $setup = "desktop-mcp-control-v$version-win-x64-setup.exe"
+          $linuxPortable = "desktop-mcp-control-v$version-linux-x64-portable.tar.gz"
           "version=$version" >> $env:GITHUB_OUTPUT
           "tag=$tag" >> $env:GITHUB_OUTPUT
           "portable=$portable" >> $env:GITHUB_OUTPUT
           "setup=$setup" >> $env:GITHUB_OUTPUT
+          "linuxPortable=$linuxPortable" >> $env:GITHUB_OUTPUT
 
       - name: Restore
         run: dotnet restore DesktopMcp.slnx
@@ -73,6 +141,12 @@ jobs:
             -p:CopyDebugSymbolFilesFromPackages=false `
             --output publish/desktop-mcp-control
 
+      - name: Download Linux artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: linux-release-assets
+          path: dist
+
       - name: Build release assets
         shell: pwsh
         run: |
@@ -103,9 +177,15 @@ jobs:
 
           Remove-Item $msiPath -Force
 
+          $linuxPortablePath = Join-Path "dist" "${{ steps.version.outputs.linuxPortable }}"
+          if (-not (Test-Path $linuxPortablePath)) {
+            throw "Linux artifact not found: $linuxPortablePath"
+          }
+
           $hashes = @(
             Get-FileHash $portablePath -Algorithm SHA256
             Get-FileHash $setupPath -Algorithm SHA256
+            Get-FileHash $linuxPortablePath -Algorithm SHA256
           )
           $hashes | ForEach-Object {
             "$($_.Hash)  $(Split-Path $_.Path -Leaf)"
@@ -117,11 +197,12 @@ jobs:
           @(
             "# Desktop MCP Control v${{ steps.version.outputs.version }}"
             ""
-            "Windows x64 build for Desktop MCP Control."
+            "Desktop MCP Control release for Windows and Linux x64."
             ""
-            "Included artifact:"
-            "- ${{ steps.version.outputs.portable }} - portable self-contained executable"
-            "- ${{ steps.version.outputs.setup }} - WiX setup executable"
+            "Included artifacts:"
+            "- ${{ steps.version.outputs.portable }} - Windows portable self-contained executable"
+            "- ${{ steps.version.outputs.setup }} - Windows WiX setup executable"
+            "- ${{ steps.version.outputs.linuxPortable }} - Linux x64 portable archive"
             "- SHA256SUMS.txt - SHA256 checksums"
             ""
             "Default MCP endpoint: http://127.0.0.1:45454/mcp"
@@ -142,7 +223,7 @@ jobs:
           commit: ${{ github.sha }}
           name: Desktop MCP Control v${{ steps.version.outputs.version }}
           bodyFile: RELEASE_NOTES.md
-          artifacts: dist/${{ steps.version.outputs.portable }},dist/${{ steps.version.outputs.setup }},dist/SHA256SUMS.txt
+          artifacts: dist/${{ steps.version.outputs.portable }},dist/${{ steps.version.outputs.setup }},dist/${{ steps.version.outputs.linuxPortable }},dist/SHA256SUMS.txt
           artifactErrorsFailBuild: true
           allowUpdates: true
           replacesArtifacts: true

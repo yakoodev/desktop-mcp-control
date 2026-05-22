@@ -11,7 +11,7 @@ namespace DesktopMcp.App.ViewModels;
 
 public partial class MainWindowViewModel : ViewModelBase
 {
-    private const int EnabledToolCount = 10;
+    private const int EnabledToolCount = 11;
     private const int ToastDurationMs = 1600;
 
     private readonly IMcpServerRuntime _runtime;
@@ -134,6 +134,7 @@ public partial class MainWindowViewModel : ViewModelBase
                 ToolDefinitionViewModel.Write("desktop.keyboard_type", "Type text on keyboard"),
                 ToolDefinitionViewModel.Write("desktop.keyboard_hotkey", "Press keyboard hotkey"),
                 ToolDefinitionViewModel.Write("desktop.drag_drop", "Drag and drop"),
+                ToolDefinitionViewModel.Read("desktop.get_capabilities", "Get platform capability flags"),
                 ToolDefinitionViewModel.Read("desktop.capture", "Capture screenshot"),
                 ToolDefinitionViewModel.Read("desktop.predict_click", "AI predict click position"),
                 ToolDefinitionViewModel.Read("desktop.predict_swipe", "AI predict swipe direction"),

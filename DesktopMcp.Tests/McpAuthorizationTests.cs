@@ -122,6 +122,18 @@ public class McpAuthorizationTests
 
     private sealed class FakeDesktopAutomationController : IDesktopAutomationController
     {
+        public Task<DesktopCapabilities> GetCapabilitiesAsync(CancellationToken cancellationToken = default)
+        {
+            return Task.FromResult(
+                new DesktopCapabilities(
+                    Mouse: true,
+                    Keyboard: true,
+                    Capture: true,
+                    WindowList: true,
+                    Tray: true,
+                    GlobalHotkey: true));
+        }
+
         public Task<VirtualDesktopInfo> GetDisplaysAsync(CancellationToken cancellationToken = default)
         {
             var info = new VirtualDesktopInfo(

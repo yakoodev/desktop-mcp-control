@@ -7,6 +7,11 @@ internal static class NativeWindowRegion
 {
     public static void ApplyRoundedCorners(Window window, double radius)
     {
+        if (!OperatingSystem.IsWindows())
+        {
+            return;
+        }
+
         window.Opened += (_, _) => Apply(window, radius);
     }
 

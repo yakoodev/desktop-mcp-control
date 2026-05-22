@@ -2,7 +2,7 @@
 
 # Desktop MCP Control
 
-Windows-first MCP панель управления, которая открывает безопасную локальную автоматизацию рабочего стола через Streamable HTTP. Внутри есть компактный glass UI, трэй-попап, token authorization, скриншоты, управление мышью и клавиатурой, а также emergency stop.
+Кроссплатформенная MCP панель управления, которая открывает безопасную локальную автоматизацию рабочего стола через Streamable HTTP. Внутри есть компактный glass UI, интеграция с треем, token authorization, скриншоты, управление мышью и клавиатурой, а также emergency stop.
 
 ![Desktop MCP Control preview](docs/assets/desktop-mcp-control-preview.png)
 
@@ -14,7 +14,8 @@ Windows-first MCP панель управления, которая открыв
 - Динамические настройки host, port и protocol без ручного перезапуска приложения.
 - Кастомный трэй-попап для открытия панели, списка tools, настроек и выхода.
 - Глобальная emergency hotkey: `Ctrl+Alt+Pause`.
-- Windows desktop automation tools для скриншотов, мыши, клавиатуры, drag-and-drop и preview действий.
+- Desktop automation tools для скриншотов, мыши, клавиатуры, drag-and-drop и preview действий.
+- Динамические platform capabilities через `desktop.get_capabilities`.
 
 ## Доступные tools
 
@@ -26,6 +27,7 @@ Windows-first MCP панель управления, которая открыв
 | `desktop.keyboard_type` | write | Напечатать текст в активном окне. |
 | `desktop.keyboard_hotkey` | write | Нажать сочетание клавиш. |
 | `desktop.drag_drop` | write | Выполнить drag-and-drop между координатами. |
+| `desktop.get_capabilities` | read | Вернуть capability flags для текущей платформы. |
 | `desktop.capture` | read | Сделать скриншот display, window или region. |
 | `desktop.predict_click` | read | Показать preview будущего клика на скриншоте. |
 | `desktop.predict_swipe` | read | Показать preview будущего свайпа на скриншоте. |
@@ -33,9 +35,10 @@ Windows-first MCP панель управления, которая открыв
 
 ## Требования
 
-- Windows 10 или Windows 11.
+- Windows 10/11 или Linux (X11 и Wayland в режиме best-effort).
 - .NET SDK 10.0 или новее для разработки.
 - MCP client с поддержкой Streamable HTTP.
+- Для Linux X11 установи `xdotool` и `wmctrl`; для скриншотов установи `imagemagick` (`import`) или `grim`.
 
 ## Быстрый старт
 
@@ -57,7 +60,8 @@ Release assets:
 
 - `desktop-mcp-control-v1.0.0-win-x64-portable.exe` - portable self-contained executable.
 - `desktop-mcp-control-v1.0.0-win-x64-setup.exe` - WiX setup executable со Start Menu shortcut.
-- `SHA256SUMS.txt` - checksums для обоих exe.
+- `desktop-mcp-control-v1.0.0-linux-x64-portable.tar.gz` - Linux x64 portable archive.
+- `SHA256SUMS.txt` - checksums для всех артефактов.
 
 ## Подключение MCP
 
@@ -97,7 +101,8 @@ http://127.0.0.1:45454/mcp
 Пользовательские настройки хранятся локально здесь:
 
 ```text
-%LocalAppData%\desktop-mcp-control\settings.json
+Windows: %LocalAppData%\desktop-mcp-control\settings.json
+Linux: ~/.local/share/desktop-mcp-control/settings.json
 ```
 
 В окне настроек можно менять:
@@ -114,6 +119,8 @@ Network и authorization настройки применяются к работ
 
 Для немедленной остановки используй `Ctrl+Alt+Pause` или tool `desktop.emergency_stop`.
 
+На Linux, особенно в Wayland-сессиях, часть функций автоматизации может быть недоступна из-за ограничений compositor/portal. Используй `desktop.get_capabilities` для проверки доступных действий и корректно обрабатывай ошибки `capability_unavailable`.
+
 ## Разработка
 
 ```powershell
@@ -125,11 +132,11 @@ dotnet test DesktopMcp.slnx
 
 - `DesktopMcp.App` - Avalonia UI, трэй, настройки и view models.
 - `DesktopMcp.Mcp` - MCP runtime, authorization и tool definitions.
-- `DesktopMcp.Core` - Windows desktop automation services.
+- `DesktopMcp.Core` - platform backends для Windows, Linux X11 и Linux Wayland (best-effort).
 - `DesktopMcp.Tests` - unit tests для runtime, settings и view model поведения.
 
 ## Статус репозитория
 
-Первый публичный релиз - `v1.0.0`. Проект сейчас в первую очередь нацелен на Windows desktop automation, а будущие релизы могут расширить packaging и client presets.
+Первый публичный релиз - `v1.0.0`. Проект теперь поддерживает Windows и Linux (X11 + Wayland best-effort capability model).
 
 

@@ -1,11 +1,13 @@
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
+using System.Runtime.Versioning;
 using DesktopMcp.Core.Abstractions;
 using DesktopMcp.Core.Models;
 
 namespace DesktopMcp.Core.Windows;
 
+[SupportedOSPlatform("windows")]
 public sealed class GdiScreenshotService : IScreenshotService
 {
     private readonly IDisplayService _displayService;

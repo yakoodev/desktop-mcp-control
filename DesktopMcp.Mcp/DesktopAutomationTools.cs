@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using System.Text.Json;
 using DesktopMcp.Core.Abstractions;
+using DesktopMcp.Core.Exceptions;
 using DesktopMcp.Core.Models;
 using ModelContextProtocol.Protocol;
 using ModelContextProtocol.Server;
@@ -15,6 +16,30 @@ public sealed class DesktopAutomationTools
     public DesktopAutomationTools(IDesktopAutomationController controller)
     {
         _controller = controller;
+    }
+
+    [McpServerTool(Name = "desktop.get_capabilities"), Description("Returns current platform capability flags for desktop automation and UI integration features.")]
+    public async Task<CallToolResult> GetCapabilities(CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var capabilities = await _controller.GetCapabilitiesAsync(cancellationToken).ConfigureAwait(false);
+            return Ok(
+                new
+                {
+                    mouse = capabilities.Mouse,
+                    keyboard = capabilities.Keyboard,
+                    capture = capabilities.Capture,
+                    windowList = capabilities.WindowList,
+                    tray = capabilities.Tray,
+                    globalHotkey = capabilities.GlobalHotkey
+                },
+                "Capabilities resolved.");
+        }
+        catch (Exception ex)
+        {
+            return Error("Failed to get capabilities.", ex);
+        }
     }
 
     [McpServerTool(Name = "desktop.get_displays"), Description("Returns virtual desktop bounds and physical display list.")]
@@ -317,6 +342,11 @@ public sealed class DesktopAutomationTools
 
     private static CallToolResult Error(string message, Exception ex)
     {
+        if (ex is CapabilityUnavailableException capabilityError)
+        {
+            return CapabilityUnavailable(message, capabilityError);
+        }
+
         return new CallToolResult
         {
             IsError = true,
@@ -326,6 +356,23 @@ public sealed class DesktopAutomationTools
                 detail = ex.Message
             }),
             Content = [new TextContentBlock { Text = $"{message} {ex.Message}" }]
+        };
+    }
+
+    private static CallToolResult CapabilityUnavailable(string message, CapabilityUnavailableException ex)
+    {
+        var capability = ex.Capability.ToString().ToLowerInvariant();
+        return new CallToolResult
+        {
+            IsError = true,
+            StructuredContent = JsonSerializer.SerializeToElement(new
+            {
+                error = message,
+                detail = ex.Message,
+                code = "capability_unavailable",
+                capability
+            }),
+            Content = [new TextContentBlock { Text = $"{message} Capability '{capability}' is unavailable." }]
         };
     }
 

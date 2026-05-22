@@ -4,6 +4,8 @@ namespace DesktopMcp.Core.Abstractions;
 
 public interface IDesktopAutomationController
 {
+    Task<DesktopCapabilities> GetCapabilitiesAsync(CancellationToken cancellationToken = default);
+
     Task<VirtualDesktopInfo> GetDisplaysAsync(CancellationToken cancellationToken = default);
 
     Task<IReadOnlyList<WindowInfo>> ListWindowsAsync(WindowQuery query, CancellationToken cancellationToken = default);

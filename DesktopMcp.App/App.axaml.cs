@@ -3,7 +3,6 @@ using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Input.Platform;
 using Avalonia.Markup.Xaml;
-using Avalonia.Platform;
 using Avalonia.Threading;
 using DesktopMcp.App.Models;
 using DesktopMcp.App.Services;
@@ -14,8 +13,7 @@ using DesktopMcp.Core.DependencyInjection;
 using DesktopMcp.Mcp;
 using DesktopMcp.Mcp.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection;
-using Drawing = System.Drawing;
-using Forms = System.Windows.Forms;
+using System.Runtime.InteropServices;
 
 namespace DesktopMcp.App;
 
@@ -28,12 +26,10 @@ public partial class App : Avalonia.Application
     private AppSettingsStore? _settingsStore;
     private IClassicDesktopStyleApplicationLifetime? _desktopLifetime;
     private MainWindow? _mainWindow;
-    private TrayPopupWindow? _trayPopupWindow;
     private AvailableToolsWindow? _availableToolsWindow;
     private SettingsWindow? _settingsWindow;
-    private GlobalEmergencyHotkeyListener? _hotkeyListener;
-    private Forms.NotifyIcon? _notifyIcon;
-    private Drawing.Icon? _notifyIconImage;
+    private IGlobalEmergencyHotkey? _hotkeyService;
+    private ITrayIntegration? _trayIntegration;
     private DispatcherTimer? _statusTimer;
     private bool _isShuttingDown;
 
@@ -55,6 +51,8 @@ public partial class App : Avalonia.Application
             _controller = _serviceProvider.GetRequiredService<IDesktopAutomationController>();
             _settingsStore = _serviceProvider.GetRequiredService<AppSettingsStore>();
             _mainWindow = _serviceProvider.GetRequiredService<MainWindow>();
+            _hotkeyService = _serviceProvider.GetRequiredService<IGlobalEmergencyHotkey>();
+            _trayIntegration = _serviceProvider.GetRequiredService<ITrayIntegration>();
 
             var settings = _settingsStore.Load();
             _viewModel.InitializeAuthorization(settings.AuthMode, settings.Token);
@@ -62,13 +60,6 @@ public partial class App : Avalonia.Application
 
             _mainWindow.DataContext = _viewModel;
             _mainWindow.Closing += OnMainWindowClosing;
-
-            _trayPopupWindow = new TrayPopupWindow
-            {
-                DataContext = _viewModel
-            };
-            _trayPopupWindow.Closing += OnTrayPopupClosing;
-            _trayPopupWindow.Deactivated += OnTrayPopupDeactivated;
 
             _availableToolsWindow = new AvailableToolsWindow
             {
@@ -86,6 +77,12 @@ public partial class App : Avalonia.Application
             {
                 if (_mainWindow is not null)
                 {
+                    if (_trayIntegration is not { IsSupported: true })
+                    {
+                        _mainWindow.WindowState = WindowState.Minimized;
+                        return;
+                    }
+
                     HideAuxiliaryWindows();
                     HideMainWindow(_mainWindow);
                 }
@@ -110,7 +107,7 @@ public partial class App : Avalonia.Application
             desktop.MainWindow = _mainWindow;
             desktop.Exit += OnDesktopExit;
 
-            ConfigureTray(_mainWindow);
+            ConfigureTray();
             ConfigureHotkey();
             ConfigureStatusTimer();
 
@@ -128,6 +125,33 @@ public partial class App : Avalonia.Application
         services.AddSingleton<AppSettingsStore>();
         services.AddSingleton<MainWindowViewModel>();
         services.AddSingleton<MainWindow>();
+        services.AddSingleton<ITrayIntegration>(
+            _ =>
+            {
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ||
+                    RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+                {
+                    return new AvaloniaTrayIntegration();
+                }
+
+                return new NullTrayIntegration();
+            });
+        services.AddSingleton<IGlobalEmergencyHotkey>(
+            _ =>
+            {
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                {
+                    return new GlobalEmergencyHotkeyListener();
+                }
+
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) && !IsWaylandSession())
+                {
+                    return new LinuxX11GlobalEmergencyHotkey();
+                }
+
+                return new NullGlobalEmergencyHotkey();
+            });
+
         return services.BuildServiceProvider();
     }
 
@@ -176,76 +200,61 @@ public partial class App : Avalonia.Application
 
     private void ConfigureHotkey()
     {
-        if (_controller is null || _viewModel is null)
+        if (_controller is null || _viewModel is null || _hotkeyService is null)
         {
             return;
         }
 
-        _hotkeyListener = new GlobalEmergencyHotkeyListener();
-        _hotkeyListener.Triggered += (_, _) =>
+        try
         {
-            _controller.TriggerEmergencyStop("Global emergency hotkey Ctrl+Alt+Pause.");
-            _viewModel.SetEmergencyState($"STOPPED (hotkey {DateTime.Now:HH:mm:ss})");
-        };
-        _hotkeyListener.Start();
+            var capabilities = _controller.GetCapabilitiesAsync().GetAwaiter().GetResult();
+            if (!capabilities.GlobalHotkey || !_hotkeyService.IsSupported)
+            {
+                _viewModel.HotkeyHint = "Unavailable on this platform";
+                return;
+            }
+
+            _hotkeyService.Triggered += (_, _) =>
+            {
+                _controller.TriggerEmergencyStop($"Global emergency hotkey {_hotkeyService.ShortcutDisplayName}.");
+                _viewModel.SetEmergencyState($"STOPPED (hotkey {DateTime.Now:HH:mm:ss})");
+            };
+
+            _hotkeyService.Start();
+            _viewModel.HotkeyHint = _hotkeyService.ShortcutDisplayName;
+        }
+        catch (Exception ex)
+        {
+            _viewModel.HotkeyHint = "Unavailable on this platform";
+            _viewModel.SetEmergencyState($"Hotkey error: {ex.Message}");
+        }
     }
 
-    private void ConfigureTray(Window mainWindow)
+    private void ConfigureTray()
     {
-        using var iconStream = AssetLoader.Open(new Uri("avares://DesktopMcp.App/Assets/icon.png"));
-        using var bitmap = new Drawing.Bitmap(iconStream);
-        _notifyIconImage = Drawing.Icon.FromHandle(bitmap.GetHicon());
-        _notifyIcon = new Forms.NotifyIcon
-        {
-            Text = "Desktop MCP",
-            Icon = _notifyIconImage,
-            Visible = true
-        };
-
-        _notifyIcon.MouseClick += (_, e) =>
-        {
-            Dispatcher.UIThread.Post(
-                () =>
-                {
-                    if (e.Button == Forms.MouseButtons.Left)
-                    {
-                        ShowMainWindow(mainWindow);
-                        return;
-                    }
-
-                    if (e.Button == Forms.MouseButtons.Right)
-                    {
-                        ShowTrayPopup();
-                    }
-                });
-        };
-    }
-
-    private void ShowTrayPopup()
-    {
-        if (_trayPopupWindow is null)
+        if (_trayIntegration is null || _mainWindow is null || _viewModel is null)
         {
             return;
         }
 
-        var screens = _mainWindow?.Screens ?? _trayPopupWindow.Screens;
-        var targetScreen = screens?.Primary ?? screens?.All.FirstOrDefault();
-        if (targetScreen is not null)
+        if (!_trayIntegration.IsSupported)
         {
-            var workArea = targetScreen.WorkingArea;
-            var popupWidth = (int)_trayPopupWindow.Width;
-            var popupHeight = (int)_trayPopupWindow.Height;
-            var x = workArea.X + Math.Max(0, workArea.Width - popupWidth - 10);
-            var y = workArea.Y + Math.Max(0, workArea.Height - popupHeight - 14);
-            _trayPopupWindow.Position = new PixelPoint(x, y);
+            _viewModel.SetEmergencyState("Tray integration is unavailable on this platform.");
+            return;
         }
 
-        if (!_trayPopupWindow.IsVisible)
+        try
         {
-            _trayPopupWindow.Show();
+            _trayIntegration.Initialize(
+                onOpenControlPanel: () => ShowMainWindow(_mainWindow),
+                onOpenTools: ShowAvailableToolsWindow,
+                onOpenSettings: ShowSettingsWindow,
+                onExitAsync: ExitApplicationAsync);
         }
-
-        _trayPopupWindow.Activate();
+        catch (Exception ex)
+        {
+            _viewModel.SetEmergencyState($"Tray error: {ex.Message}");
+        }
     }
 
     private void ShowAvailableToolsWindow()
@@ -292,8 +301,6 @@ public partial class App : Avalonia.Application
 
     private void ShowAuxiliaryWindow(Window window, int verticalOffset)
     {
-        HideTrayPopup();
-
         var screens = _mainWindow?.Screens ?? window.Screens;
         var targetScreen = screens?.Primary ?? screens?.All.FirstOrDefault();
         if (targetScreen is not null)
@@ -322,14 +329,6 @@ public partial class App : Avalonia.Application
         else
         {
             window.Activate();
-        }
-    }
-
-    private void HideTrayPopup()
-    {
-        if (_trayPopupWindow is { IsVisible: true })
-        {
-            _trayPopupWindow.Hide();
         }
     }
 
@@ -368,7 +367,6 @@ public partial class App : Avalonia.Application
         }
 
         _isShuttingDown = true;
-        HideTrayPopup();
 
         if (_mcpRuntime is not null)
         {
@@ -383,7 +381,6 @@ public partial class App : Avalonia.Application
 
     private void ShowMainWindow(Window mainWindow)
     {
-        HideTrayPopup();
         mainWindow.ShowInTaskbar = true;
         mainWindow.Show();
         mainWindow.Activate();
@@ -413,27 +410,6 @@ public partial class App : Avalonia.Application
         }
     }
 
-    private void OnTrayPopupClosing(object? sender, WindowClosingEventArgs e)
-    {
-        if (_isShuttingDown)
-        {
-            return;
-        }
-
-        e.Cancel = true;
-        HideTrayPopup();
-    }
-
-    private void OnTrayPopupDeactivated(object? sender, EventArgs e)
-    {
-        if (_isShuttingDown)
-        {
-            return;
-        }
-
-        HideTrayPopup();
-    }
-
     private void OnAuxiliaryWindowClosing(object? sender, WindowClosingEventArgs e)
     {
         if (_isShuttingDown)
@@ -452,15 +428,8 @@ public partial class App : Avalonia.Application
     {
         _isShuttingDown = true;
         _statusTimer?.Stop();
-        _hotkeyListener?.Dispose();
-        if (_notifyIcon is not null)
-        {
-            _notifyIcon.Visible = false;
-            _notifyIcon.Dispose();
-        }
-
-        _notifyIconImage?.Dispose();
-        _trayPopupWindow?.Close();
+        _hotkeyService?.Dispose();
+        _trayIntegration?.Dispose();
         _availableToolsWindow?.Close();
         _settingsWindow?.Close();
 
@@ -471,5 +440,16 @@ public partial class App : Avalonia.Application
         }
 
         _serviceProvider?.Dispose();
+    }
+
+    private static bool IsWaylandSession()
+    {
+        var sessionType = Environment.GetEnvironmentVariable("XDG_SESSION_TYPE");
+        if (string.Equals(sessionType, "wayland", StringComparison.OrdinalIgnoreCase))
+        {
+            return true;
+        }
+
+        return !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("WAYLAND_DISPLAY"));
     }
 }

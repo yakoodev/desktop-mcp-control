@@ -1,4 +1,5 @@
 using DesktopMcp.Core.Abstractions;
+using DesktopMcp.Core.Exceptions;
 using DesktopMcp.Core.Models;
 
 namespace DesktopMcp.Core.Services;
@@ -7,52 +8,53 @@ public sealed class DesktopAutomationController : IDesktopAutomationController
 {
     private static readonly TimeSpan DefaultTimeout = TimeSpan.FromSeconds(10);
 
-    private readonly IDisplayService _displayService;
-    private readonly IWindowService _windowService;
-    private readonly IInputAutomationService _inputService;
-    private readonly IScreenshotService _screenshotService;
+    private readonly IDesktopAutomationBackend _backend;
     private readonly IActionQueue _queue;
     private readonly IEmergencyStopService _emergencyStop;
 
     public DesktopAutomationController(
-        IDisplayService displayService,
-        IWindowService windowService,
-        IInputAutomationService inputService,
-        IScreenshotService screenshotService,
+        IDesktopAutomationBackend backend,
         IActionQueue queue,
         IEmergencyStopService emergencyStop)
     {
-        _displayService = displayService;
-        _windowService = windowService;
-        _inputService = inputService;
-        _screenshotService = screenshotService;
+        _backend = backend;
         _queue = queue;
         _emergencyStop = emergencyStop;
+    }
+
+    public Task<DesktopCapabilities> GetCapabilitiesAsync(CancellationToken cancellationToken = default)
+    {
+        return EnqueueAsync(
+            _ => Task.FromResult(_backend.GetCapabilities()),
+            DefaultTimeout,
+            cancellationToken);
     }
 
     public Task<VirtualDesktopInfo> GetDisplaysAsync(CancellationToken cancellationToken = default)
     {
         return EnqueueAsync(
-            _ => Task.FromResult(_displayService.GetVirtualDesktopInfo()),
+            _ => Task.FromResult(_backend.GetVirtualDesktopInfo()),
             DefaultTimeout,
             cancellationToken);
     }
 
     public Task<IReadOnlyList<WindowInfo>> ListWindowsAsync(WindowQuery query, CancellationToken cancellationToken = default)
     {
+        EnsureCapability(DesktopCapability.WindowList);
         return EnqueueAsync(
-            _ => Task.FromResult(_windowService.ListWindows(query)),
+            _ => Task.FromResult(_backend.ListWindows(query)),
             DefaultTimeout,
             cancellationToken);
     }
 
     public Task<ScreenPoint> MouseMoveAsync(ScreenPoint point, CancellationToken cancellationToken = default)
     {
+        EnsureCapability(DesktopCapability.Mouse);
         return EnqueueAsync(
             _ =>
             {
-                _inputService.MoveMouse(point);
-                return Task.FromResult(_inputService.GetCursorPosition());
+                _backend.MoveMouse(point);
+                return Task.FromResult(_backend.GetCursorPosition());
             },
             DefaultTimeout,
             cancellationToken);
@@ -64,11 +66,12 @@ public sealed class DesktopAutomationController : IDesktopAutomationController
         int clickCount,
         CancellationToken cancellationToken = default)
     {
+        EnsureCapability(DesktopCapability.Mouse);
         return EnqueueAsync(
             _ =>
             {
-                _inputService.Click(point, button, clickCount);
-                return Task.FromResult(_inputService.GetCursorPosition());
+                _backend.Click(point, button, clickCount);
+                return Task.FromResult(_backend.GetCursorPosition());
             },
             DefaultTimeout,
             cancellationToken);
@@ -80,11 +83,12 @@ public sealed class DesktopAutomationController : IDesktopAutomationController
         int deltaX,
         CancellationToken cancellationToken = default)
     {
+        EnsureCapability(DesktopCapability.Mouse);
         return EnqueueAsync(
             _ =>
             {
-                _inputService.Scroll(point, deltaY, deltaX);
-                return Task.FromResult(_inputService.GetCursorPosition());
+                _backend.Scroll(point, deltaY, deltaX);
+                return Task.FromResult(_backend.GetCursorPosition());
             },
             DefaultTimeout,
             cancellationToken);
@@ -92,10 +96,11 @@ public sealed class DesktopAutomationController : IDesktopAutomationController
 
     public Task KeyboardTypeAsync(string text, CancellationToken cancellationToken = default)
     {
+        EnsureCapability(DesktopCapability.Keyboard);
         return EnqueueAsync(
             _ =>
             {
-                _inputService.TypeText(text);
+                _backend.TypeText(text);
                 return Task.FromResult(true);
             },
             DefaultTimeout,
@@ -104,10 +109,11 @@ public sealed class DesktopAutomationController : IDesktopAutomationController
 
     public Task KeyboardHotkeyAsync(IReadOnlyList<string> keys, CancellationToken cancellationToken = default)
     {
+        EnsureCapability(DesktopCapability.Keyboard);
         return EnqueueAsync(
             _ =>
             {
-                _inputService.PressHotkey(keys);
+                _backend.PressHotkey(keys);
                 return Task.FromResult(true);
             },
             DefaultTimeout,
@@ -121,10 +127,11 @@ public sealed class DesktopAutomationController : IDesktopAutomationController
         int durationMs,
         CancellationToken cancellationToken = default)
     {
+        EnsureCapability(DesktopCapability.Mouse);
         return EnqueueAsync(
             async token =>
             {
-                await _inputService.DragDropAsync(from, to, button, durationMs, token).ConfigureAwait(false);
+                await _backend.DragDropAsync(from, to, button, durationMs, token).ConfigureAwait(false);
                 return true;
             },
             TimeSpan.FromMilliseconds(Math.Max(1000, durationMs + 5000)),
@@ -133,8 +140,9 @@ public sealed class DesktopAutomationController : IDesktopAutomationController
 
     public Task<CaptureResult> CaptureAsync(CaptureRequest request, CancellationToken cancellationToken = default)
     {
+        EnsureCapability(DesktopCapability.Capture);
         return EnqueueAsync(
-            _ => Task.FromResult(_screenshotService.Capture(request)),
+            _ => Task.FromResult(_backend.Capture(request)),
             TimeSpan.FromSeconds(20),
             cancellationToken);
     }
@@ -156,5 +164,15 @@ public sealed class DesktopAutomationController : IDesktopAutomationController
     {
         using var linked = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _emergencyStop.StopToken);
         return await _queue.EnqueueAsync(action, timeout, linked.Token).ConfigureAwait(false);
+    }
+
+    private void EnsureCapability(DesktopCapability capability)
+    {
+        if (_backend.GetCapabilities().Has(capability))
+        {
+            return;
+        }
+
+        throw new CapabilityUnavailableException(capability);
     }
 }
