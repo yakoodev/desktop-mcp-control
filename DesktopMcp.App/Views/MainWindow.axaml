@@ -305,7 +305,7 @@
                     </StackPanel>
 
                     <Grid Grid.Row="1" ColumnDefinitions="*,Auto" VerticalAlignment="Bottom">
-                        <TextBlock Text="v1.0.0  •  Streamable HTTP" Foreground="#8F9CB6" FontSize="12" />
+                        <TextBlock Text="v1.0.1  •  Streamable HTTP" Foreground="#8F9CB6" FontSize="12" />
                         <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8">
                             <TextBlock Text="&#xE72E;" FontFamily="Segoe MDL2 Assets" Foreground="#48E086" FontSize="15" />
                             <TextBlock Text="Secure" Foreground="#B8C7DA" FontSize="13" />
